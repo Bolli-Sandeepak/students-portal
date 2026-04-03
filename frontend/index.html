@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AcadPortal — Student Academic Portal</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+ 
+<!-- ═══════════════════════════════════════════════ LOADER ══ -->
+<div id="loader" class="loader-overlay">
+  <div class="loader-content">
+    <div class="loader-logo">
+      <i class="fas fa-graduation-cap"></i>
+    </div>
+    <div class="loader-ring"></div>
+    <p class="loader-text">AcadPortal</p>
+    <span class="loader-sub">Loading your academic world…</span>
+  </div>
+</div>
+ 
+<!-- ═══════════════════════════════════════════════ AUTH ══ -->
+<div id="auth-page" class="auth-page hidden">
+  <div class="auth-bg">
+    <div class="auth-bg-overlay"></div>
+    <div class="auth-particles" id="particles"></div>
+  </div>
+ 
+  <div class="auth-container">
+    <!-- Login Form -->
+    <div class="auth-card" id="login-card">
+      <div class="auth-card-header">
+        <div class="auth-logo"><i class="fas fa-graduation-cap"></i></div>
+        <h1>AcadPortal</h1>
+        <p>Sign in to your academic portal</p>
+      </div>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label><i class="fas fa-id-card"></i> Registration / Email</label>
+          <input type="text" id="login-id" placeholder="21BCE1234 or student@vit.ac.in" required/>
+          <span class="form-error" id="login-id-error"></span>
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-lock"></i> Password</label>
+          <div class="input-with-eye">
+            <input type="password" id="login-pass" placeholder="Enter your password" required/>
+            <button type="button" class="eye-btn" onclick="togglePass('login-pass',this)"><i class="fas fa-eye"></i></button>
+          </div>
+          <span class="form-error" id="login-pass-error"></span>
+        </div>
+        <div class="form-row">
+          <label class="checkbox-label"><input type="checkbox" id="remember-me"/> Remember me</label>
+          <a href="#" class="forgot-link" onclick="showForgot()">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-primary btn-full">
+          <span>Sign In</span><i class="fas fa-arrow-right"></i>
+        </button>
+      </form>
+      <div class="auth-switch">
+        Don't have an account? <a href="#" onclick="switchAuth('signup')">Create one</a>
+      </div>
+    </div>
+ 
+    <!-- Signup Form -->
+    <div class="auth-card hidden" id="signup-card">
+      <div class="auth-card-header">
+        <div class="auth-logo"><i class="fas fa-graduation-cap"></i></div>
+        <h1>Join AcadPortal</h1>
+        <p>Create your student account</p>
+      </div>
+      <form id="signup-form" onsubmit="handleSignup(event)">
+        <div class="form-row-2">
+          <div class="form-group">
+            <label><i class="fas fa-user"></i> Full Name</label>
+            <input type="text" id="su-name" placeholder="Arjun Sharma" required/>
+            <span class="form-error" id="su-name-error"></span>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-id-badge"></i> Reg. Number</label>
+            <input type="text" id="su-reg" placeholder="21BCE1234" required/>
+            <span class="form-error" id="su-reg-error"></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-envelope"></i> Email Address</label>
+          <input type="email" id="su-email" placeholder="arjun@vitstudent.ac.in" required/>
+          <span class="form-error" id="su-email-error"></span>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group">
+            <label><i class="fas fa-lock"></i> Password</label>
+            <div class="input-with-eye">
+              <input type="password" id="su-pass" placeholder="Min 8 chars" required/>
+              <button type="button" class="eye-btn" onclick="togglePass('su-pass',this)"><i class="fas fa-eye"></i></button>
+            </div>
+            <span class="form-error" id="su-pass-error"></span>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-lock"></i> Confirm Password</label>
+            <div class="input-with-eye">
+              <input type="password" id="su-cpass" placeholder="Re-enter password" required/>
+              <button type="button" class="eye-btn" onclick="togglePass('su-cpass',this)"><i class="fas fa-eye"></i></button>
+            </div>
+            <span class="form-error" id="su-cpass-error"></span>
+          </div>
+        </div>
+        <button type="submit" class="btn-primary btn-full">
+          <span>Create Account</span><i class="fas fa-user-plus"></i>
+        </button>
+      </form>
+      <div class="auth-switch">
+        Already have an account? <a href="#" onclick="switchAuth('login')">Sign in</a>
+      </div>
+    </div>
+ 
+    <!-- Forgot Password -->
+    <div class="auth-card hidden" id="forgot-card">
+      <div class="auth-card-header">
+        <div class="auth-logo"><i class="fas fa-key"></i></div>
+        <h1>Reset Password</h1>
+        <p>Enter your email to receive reset link</p>
+      </div>
+      <form id="forgot-form" onsubmit="handleForgot(event)">
+        <div class="form-group">
+          <label><i class="fas fa-envelope"></i> Email Address</label>
+          <input type="email" id="forgot-email" placeholder="student@vit.ac.in" required/>
+        </div>
+        <button type="submit" class="btn-primary btn-full">
+          <span>Send Reset Link</span><i class="fas fa-paper-plane"></i>
+        </button>
+      </form>
+      <div class="auth-switch"><a href="#" onclick="switchAuth('login')">← Back to Login</a></div>
+    </div>
+  </div>
+</div>
+ 
+<!-- ═══════════════════════════════════════════════ MAIN APP ══ -->
+<div id="app" class="hidden">
+ 
+  <!-- TOP NAVBAR -->
+  <nav class="topnav">
+    <div class="topnav-left">
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="topnav-brand">
+        <i class="fas fa-graduation-cap"></i>
+        <span>AcadPortal</span>
+      </div>
+    </div>
+    <div class="topnav-center">
+      <div class="topnav-search">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Search courses, assignments…"/>
+      </div>
+    </div>
+    <div class="topnav-right">
+      <button class="icon-btn" onclick="toggleDark()" title="Toggle Dark Mode" id="dark-toggle">
+        <i class="fas fa-moon"></i>
+      </button>
+      <button class="icon-btn notif-btn" onclick="navigateTo('notifications')">
+        <i class="fas fa-bell"></i>
+        <span class="notif-badge">3</span>
+      </button>
+      <div class="nav-profile" onclick="navigateTo('profile')">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun&backgroundColor=b6e3f4" alt="Profile" class="nav-avatar"/>
+        <div class="nav-profile-info">
+          <span class="nav-name">Arjun Sharma</span>
+          <span class="nav-reg">21BCE1234</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+ 
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-profile">
+      <div class="sidebar-avatar-wrap">
+        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun&backgroundColor=b6e3f4" alt="Profile" class="sidebar-avatar"/>
+        <span class="online-dot"></span>
+      </div>
+      <div class="sidebar-profile-info">
+        <strong>Arjun Sharma</strong>
+        <span>21BCE1234 · B.Tech CSE</span>
+      </div>
+    </div>
+ 
+    <nav class="sidebar-nav">
+      <div class="sidebar-section-label">Main</div>
+      <a class="sidebar-link active" data-page="dashboard" onclick="navigateTo('dashboard')">
+        <i class="fas fa-th-large"></i><span>Dashboard</span>
+      </a>
+      <a class="sidebar-link" data-page="profile" onclick="navigateTo('profile')">
+        <i class="fas fa-user-circle"></i><span>Student Profile</span>
+      </a>
+      <a class="sidebar-link" data-page="academics" onclick="navigateTo('academics')">
+        <i class="fas fa-book-open"></i><span>Academic Records</span>
+      </a>
+ 
+      <div class="sidebar-section-label">Academic</div>
+      <a class="sidebar-link" data-page="attendance" onclick="navigateTo('attendance')">
+        <i class="fas fa-calendar-check"></i><span>Attendance</span>
+      </a>
+      <a class="sidebar-link" data-page="marks" onclick="navigateTo('marks')">
+        <i class="fas fa-chart-bar"></i><span>Marks</span>
+      </a>
+      <a class="sidebar-link" data-page="assignments" onclick="navigateTo('assignments')">
+        <i class="fas fa-file-upload"></i><span>Assignments</span>
+      </a>
+ 
+      <div class="sidebar-section-label">Campus</div>
+      <a class="sidebar-link" data-page="hostel" onclick="navigateTo('hostel')">
+        <i class="fas fa-building"></i><span>Hostel Details</span>
+      </a>
+      <a class="sidebar-link" data-page="fees" onclick="navigateTo('fees')">
+        <i class="fas fa-credit-card"></i><span>Fee Payment</span>
+      </a>
+      <a class="sidebar-link" data-page="leave" onclick="navigateTo('leave')">
+        <i class="fas fa-calendar-minus"></i><span>Leave Application</span>
+      </a>
+ 
+      <div class="sidebar-section-label">Other</div>
+      <a class="sidebar-link" data-page="notifications" onclick="navigateTo('notifications')">
+        <i class="fas fa-bell"></i><span>Notifications</span>
+        <span class="sidebar-badge">3</span>
+      </a>
+      <a class="sidebar-link" data-page="settings" onclick="navigateTo('settings')">
+        <i class="fas fa-cog"></i><span>Settings</span>
+      </a>
+      <a class="sidebar-link logout-link" onclick="handleLogout()">
+        <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+      </a>
+    </nav>
+  </aside>
+ 
+  <!-- OVERLAY for mobile -->
+  <div class="sidebar-overlay hidden" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+ 
+  <!-- MAIN CONTENT -->
+  <main class="main-content" id="main-content">
+ 
+    <!-- ───── DASHBOARD PAGE ───── -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <h2>Good Morning, Arjun! 👋</h2>
+          <p>Here's your academic snapshot for today.</p>
+        </div>
+        <div class="page-header-meta">
+          <span class="date-chip"><i class="fas fa-calendar"></i> <span id="today-date"></span></span>
+          <span class="semester-chip"><i class="fas fa-layer-group"></i> Semester 6</span>
+        </div>
+      </div>
+ 
+      <!-- Overview Cards -->
+      <div class="overview-grid">
+        <div class="ov-card ov-card--blue">
+          <div class="ov-icon"><i class="fas fa-chart-pie"></i></div>
+          <div class="ov-info">
+            <span class="ov-label">Attendance</span>
+            <span class="ov-value">87.4%</span>
+            <span class="ov-sub ov-good"><i class="fas fa-arrow-up"></i> 2.1% this week</span>
+          </div>
+          <div class="ov-sparkline">
+            <canvas id="sparkAttendance"></canvas>
+          </div>
+        </div>
+        <div class="ov-card ov-card--indigo">
+          <div class="ov-icon"><i class="fas fa-star"></i></div>
+          <div class="ov-info">
+            <span class="ov-label">CGPA</span>
+            <span class="ov-value">8.76</span>
+            <span class="ov-sub ov-good"><i class="fas fa-arrow-up"></i> 0.12 vs last sem</span>
+          </div>
+          <div class="ov-sparkline">
+            <canvas id="sparkCGPA"></canvas>
+          </div>
+        </div>
+        <div class="ov-card ov-card--green">
+          <div class="ov-icon"><i class="fas fa-rupee-sign"></i></div>
+          <div class="ov-info">
+            <span class="ov-label">Fees Status</span>
+            <span class="ov-value">Paid</span>
+            <span class="ov-sub ov-good"><i class="fas fa-check-circle"></i> Sem 6 cleared</span>
+          </div>
+        </div>
+        <div class="ov-card ov-card--amber">
+          <div class="ov-icon"><i class="fas fa-tasks"></i></div>
+          <div class="ov-info">
+            <span class="ov-label">Pending Tasks</span>
+            <span class="ov-value">4</span>
+            <span class="ov-sub ov-warn"><i class="fas fa-exclamation-circle"></i> 2 due today</span>
+          </div>
+        </div>
+      </div>
+ 
+      <!-- Charts Row -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Semester Performance</h3>
+            <span class="chart-meta">SGPA trend</span>
+          </div>
+          <canvas id="cgpaChart" height="220"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3>Subject Attendance</h3>
+            <span class="chart-meta">Current semester</span>
+          </div>
+          <canvas id="attendanceChart" height="220"></canvas>
+        </div>
+      </div>
+ 
+      <!-- Recent Activity & Upcoming -->
+      <div class="bottom-grid">
+        <div class="info-card">
+          <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+          <ul class="activity-list">
+            <li><span class="act-dot act-blue"></span><div><strong>Assignment Submitted</strong><p>Data Structures — Lab 6</p><time>2h ago</time></div></li>
+            <li><span class="act-dot act-green"></span><div><strong>Attendance Marked</strong><p>Cloud Computing — Present</p><time>Today 9:00 AM</time></div></li>
+            <li><span class="act-dot act-amber"></span><div><strong>New Notification</strong><p>Internal exam schedule released</p><time>Yesterday</time></div></li>
+            <li><span class="act-dot act-red"></span><div><strong>Leave Rejected</strong><p>Feb 14 leave application</p><time>2 days ago</time></div></li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <h3><i class="fas fa-calendar-alt"></i> Upcoming Events</h3>
+          <ul class="event-list">
+            <li class="event-item event-red"><span class="ev-date"><strong>12</strong><small>Apr</small></span><div><strong>Internal Assessment 2</strong><p>Data Structures · Room 201</p></div></li>
+            <li class="event-item event-blue"><span class="ev-date"><strong>15</strong><small>Apr</small></span><div><strong>Assignment Due</strong><p>Machine Learning Project</p></div></li>
+            <li class="event-item event-green"><span class="ev-date"><strong>20</strong><small>Apr</small></span><div><strong>Cultural Fest</strong><p>VIT Vibrance 2026</p></div></li>
+            <li class="event-item event-amber"><span class="ev-date"><strong>28</strong><small>Apr</small></span><div><strong>End Semester Exam</strong><p>Sem 6 · Main Exam Hall</p></div></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+ 
+    <!-- ───── PROFILE PAGE ───── -->
+    <section class="page" id="page-profile">
+      <div class="page-header">
+        <h2>Student Profile</h2>
+        <p>Your personal and academic information</p>
+      </div>
+      <div class="profile-layout">
+        <div class="profile-left">
+          <div class="profile-card-main">
+            <div class="profile-pic-wrap">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun&backgroundColor=b6e3f4" alt="Profile" class="profile-pic"/>
+              <button class="profile-pic-edit"><i class="fas fa-camera"></i></button>
+            </div>
+            <h2>Arjun Sharma</h2>
+            <span class="profile-reg-badge">21BCE1234</span>
+            <div class="profile-badges">
+              <span class="badge badge-blue">B.Tech CSE</span>
+              <span class="badge badge-green">Year 3</span>
+              <span class="badge badge-gold">Dean's List</span>
+            </div>
+            <div class="profile-stats-mini">
+              <div><strong>8.76</strong><small>CGPA</small></div>
+              <div><strong>87%</strong><small>Attendance</small></div>
+              <div><strong>Sem 6</strong><small>Current</small></div>
+            </div>
+          </div>
+        </div>
+        <div class="profile-right">
+          <div class="info-card">
+            <h3><i class="fas fa-user"></i> Personal Information</h3>
+            <div class="info-grid">
+              <div class="info-field"><label>Full Name</label><span>Arjun Sharma</span></div>
+              <div class="info-field"><label>Date of Birth</label><span>15 March 2002</span></div>
+              <div class="info-field"><label>Gender</label><span>Male</span></div>
+              <div class="info-field"><label>Blood Group</label><span>B+</span></div>
+              <div class="info-field"><label>Phone</label><span>+91 98765 43210</span></div>
+              <div class="info-field"><label>Email</label><span>arjun.sharma2021@vit.ac.in</span></div>
+              <div class="info-field"><label>Address</label><span>42, Green Park, New Delhi — 110016</span></div>
+              <div class="info-field"><label>Nationality</label><span>Indian</span></div>
+            </div>
+          </div>
+          <div class="info-card">
+            <h3><i class="fas fa-university"></i> Academic Information</h3>
+            <div class="info-grid">
+              <div class="info-field"><label>Registration No</label><span>21BCE1234</span></div>
+              <div class="info-field"><label>Programme</label><span>B.Tech</span></div>
+              <div class="info-field"><label>Branch</label><span>Computer Science & Engineering</span></div>
+              <div class="info-field"><label>Specialization</label><span>Artificial Intelligence & ML</span></div>
+              <div class="info-field"><label>School</label><span>SCOPE — VIT-AP</span></div>
+              <div class="info-field"><label>Advisor</label><span>Dr. Priya Nair</span></div>
+              <div class="info-field"><label>Admission Year</label><span>2021</span></div>
+              <div class="info-field"><label>Expected Graduation</label><span>May 2025</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+ 
+    <!-- ───── ACADEMIC RECORDS PAGE ───── -->
+    <section class="page" id="page-academics">
+      <div class="page-header">
+        <h2>Academic Records</h2>
+        <p>Cumulative academic performance overview</p>
+      </div>
+      <div class="academic-summary">
+        <div class="summary-card">
+          <i class="fas fa-trophy"></i>
+          <div><strong>8.76</strong><span>CGPA</span></div>
+        </div>
+        <div class="summary-card">
+          <i class="fas fa-layer-group"></i>
+          <div><strong>6 of 8</strong><span>Semesters</span></div>
+        </div>
+        <div class="summary-card">
+          <i class="fas fa-book"></i>
+          <div><strong>42</strong><span>Credits Earned</span></div>
+        </div>
+        <div class="summary-card">
+          <i class="fas fa-medal"></i>
+          <div><strong>First Class</strong><span>With Distinction</span></div>
+        </div>
+      </div>
+      <div class="info-card">
+        <h3><i class="fas fa-table"></i> Semester-wise SGPA</h3>
+        <table class="data-table">
+          <thead><tr><th>Semester</th><th>Credits Registered</th><th>Credits Earned</th><th>SGPA</th><th>CGPA</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Semester 1</td><td>22</td><td>22</td><td>8.20</td><td>8.20</td><td><span class="badge badge-green">Passed</span></td></tr>
+            <tr><td>Semester 2</td><td>22</td><td>22</td><td>8.45</td><td>8.32</td><td><span class="badge badge-green">Passed</span></td></tr>
+            <tr><td>Semester 3</td><td>24</td><td>24</td><td>8.90</td><td>8.52</td><td><span class="badge badge-green">Passed</span></td></tr>
+            <tr><td>Semester 4</td><td>24</td><td>24</td><td>9.10</td><td>8.66</td><td><span class="badge badge-green">Passed</span></td></tr>
+            <tr><td>Semester 5</td><td>22</td><td>22</td><td>8.80</td><td>8.69</td><td><span class="badge badge-green">Passed</span></td></tr>
+            <tr><td>Semester 6</td><td>22</td><td>—</td><td>—</td><td>8.76*</td><td><span class="badge badge-blue">Ongoing</span></td></tr>
+            <tr><td>Semester 7</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="badge badge-gray">Upcoming</span></td></tr>
+            <tr><td>Semester 8</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="badge badge-gray">Upcoming</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+ 
+    <!-- ───── ATTENDANCE PAGE ───── -->
+    <section class="page" id="page-attendance">
+      <div class="page-header">
+        <h2>Attendance</h2>
+        <p>Subject-wise attendance for Semester 6</p>
+      </div>
+      <div class="attendance-summary-bar">
+        <div class="att-summary-item">
+          <span class="att-summary-label">Overall Attendance</span>
+          <span class="att-summary-value att-good">87.4%</span>
+        </div>
+        <div class="att-summary-item">
+          <span class="att-summary-label">Classes Attended</span>
+          <span class="att-summary-value">248 / 284</span>
+        </div>
+        <div class="att-summary-item">
+          <span class="att-summary-label">Min. Required</span>
+          <span class="att-summary-value">75%</span>
+        </div>
+        <div class="att-summary-item">
+          <span class="att-summary-label">Classes can miss</span>
+          <span class="att-summary-value att-good">34 more</span>
+        </div>
+      </div>
+      <div class="info-card">
+        <h3><i class="fas fa-calendar-check"></i> Subject-wise Attendance</h3>
+        <table class="data-table">
+          <thead><tr><th>Subject Code</th><th>Subject Name</th><th>Faculty</th><th>Conducted</th><th>Attended</th><th>Percentage</th><th>Status</th></tr></thead>
+          <tbody id="attendance-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+ 
+    <!-- ───── MARKS PAGE ───── -->
+    <section class="page" id="page-marks">
+      <div class="page-header">
+        <h2>Marks</h2>
+        <p>Semester-wise grade details</p>
+      </div>
+      <div class="sem-tabs" id="sem-tabs">
+        <button class="sem-tab active" data-sem="1" onclick="switchSem(1)">Sem 1</button>
+        <button class="sem-tab" data-sem="2" onclick="switchSem(2)">Sem 2</button>
+        <button class="sem-tab" data-sem="3" onclick="switchSem(3)">Sem 3</button>
+        <button class="sem-tab" data-sem="4" onclick="switchSem(4)">Sem 4</button>
+        <button class="sem-tab" data-sem="5" onclick="switchSem(5)">Sem 5</button>
+        <button class="sem-tab" data-sem="6" onclick="switchSem(6)">Sem 6 ●</button>
+        <button class="sem-tab" data-sem="7" onclick="switchSem(7)">Sem 7</button>
+        <button class="sem-tab" data-sem="8" onclick="switchSem(8)">Sem 8</button>
+      </div>
+      <div class="info-card" id="marks-table-wrap">
+        <div class="marks-sem-header" id="marks-sem-header"></div>
+        <table class="data-table" id="marks-table">
+          <thead><tr><th>Course Code</th><th>Course Name</th><th>Credits</th><th>Internal</th><th>External</th><th>Total</th><th>Grade</th><th>Grade Points</th></tr></thead>
+          <tbody id="marks-table-body"></tbody>
+        </table>
+        <div class="marks-footer" id="marks-footer"></div>
+      </div>
+    </section>
+ 
+    <!-- ───── ASSIGNMENTS PAGE ───── -->
+    <section class="page" id="page-assignments">
+      <div class="page-header">
+        <h2>Digital Assignments</h2>
+        <p>Upload and manage your assignment submissions</p>
+      </div>
+      <div class="assignment-upload-zone" id="upload-zone">
+        <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+        <h3>Drop files here or click to upload</h3>
+        <p>Supports PDF, DOCX, ZIP · Max size 20MB</p>
+        <input type="file" id="file-input" multiple style="display:none" onchange="handleFileUpload(event)"/>
+        <button class="btn-primary" onclick="document.getElementById('file-input').click()">
+          <i class="fas fa-plus"></i> Select Files
+        </button>
+      </div>
+      <div class="info-card" style="margin-top:1.5rem;">
+        <div class="assignment-header-row">
+          <h3><i class="fas fa-file-alt"></i> Submitted Assignments</h3>
+          <span class="badge badge-blue" id="sub-count">4 Submitted</span>
+        </div>
+        <ul class="assignment-list" id="assignment-list"></ul>
+      </div>
+    </section>
+ 
+    <!-- ───── HOSTEL PAGE ───── -->
+    <section class="page" id="page-hostel">
+      <div class="page-header">
+        <h2>Hostel Details</h2>
+        <p>Your on-campus accommodation information</p>
+      </div>
+      <div class="hostel-grid">
+        <div class="info-card hostel-main-card">
+          <div class="hostel-hero">
+            <div class="hostel-room-badge">Room 304</div>
+            <div class="hostel-block-badge">Block A · Men's Hostel</div>
+          </div>
+          <div class="info-grid" style="margin-top:1.5rem;">
+            <div class="info-field"><label>Room Number</label><span>A-304</span></div>
+            <div class="info-field"><label>Block</label><span>A-Block (Vindhya)</span></div>
+            <div class="info-field"><label>Floor</label><span>3rd Floor</span></div>
+            <div class="info-field"><label>Room Type</label><span>Double Sharing (AC)</span></div>
+            <div class="info-field"><label>Check-in Date</label><span>10 August 2024</span></div>
+            <div class="info-field"><label>Check-out Date</label><span>30 May 2025</span></div>
+          </div>
+        </div>
+        <div class="hostel-sidebar-cards">
+          <div class="info-card">
+            <h3><i class="fas fa-user-tie"></i> Warden Details</h3>
+            <div class="warden-card">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Warden&backgroundColor=ffd5b5" alt="Warden" class="warden-img"/>
+              <div>
+                <strong>Mr. Rajkumar V.</strong>
+                <p>Chief Warden — A Block</p>
+                <a href="tel:+91-9876501234"><i class="fas fa-phone"></i> +91 98765 01234</a>
+              </div>
+            </div>
+          </div>
+          <div class="info-card">
+            <h3><i class="fas fa-users"></i> Roommate</h3>
+            <div class="warden-card">
+              <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Rahul&backgroundColor=c0e4ff" alt="Roommate" class="warden-img"/>
+              <div>
+                <strong>Rahul Mehta</strong>
+                <p>21BCE5678 · B.Tech ECE</p>
+                <span class="badge badge-green">Active Resident</span>
+              </div>
+            </div>
+          </div>
+          <div class="info-card">
+            <h3><i class="fas fa-concierge-bell"></i> Hostel Amenities</h3>
+            <div class="amenities-list">
+              <span class="amenity-chip"><i class="fas fa-wifi"></i> Wi-Fi</span>
+              <span class="amenity-chip"><i class="fas fa-utensils"></i> Mess</span>
+              <span class="amenity-chip"><i class="fas fa-snowflake"></i> A/C</span>
+              <span class="amenity-chip"><i class="fas fa-dumbbell"></i> Gym</span>
+              <span class="amenity-chip"><i class="fas fa-medkit"></i> Medical</span>
+              <span class="amenity-chip"><i class="fas fa-tv"></i> Common Room</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+ 
+    <!-- ───── FEES PAGE ───── -->
+    <section class="page" id="page-fees">
+      <div class="page-header">
+        <h2>Fee Payment</h2>
+        <p>Semester fee breakdown and payment history</p>
+      </div>
+      <div class="fee-status-banner fee-paid">
+        <i class="fas fa-check-circle"></i>
+        <div><strong>Semester 6 Fees Paid!</strong><p>Payment received on 5 Jan 2026 · Ref: VIT2026010005</p></div>
+        <button class="btn-outline" onclick="downloadReceipt()"><i class="fas fa-download"></i> Receipt</button>
+      </div>
+      <div class="fees-grid">
+        <div class="info-card">
+          <h3><i class="fas fa-receipt"></i> Semester 6 Breakdown</h3>
+          <table class="data-table fee-table">
+            <thead><tr><th>Fee Component</th><th>Amount (₹)</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>Tuition Fee</td><td>₹1,20,000</td><td><span class="badge badge-green">Paid</span></td></tr>
+              <tr><td>Hostel Fee</td><td>₹60,000</td><td><span class="badge badge-green">Paid</span></td></tr>
+              <tr><td>Mess Fee</td><td>₹25,000</td><td><span class="badge badge-green">Paid</span></td></tr>
+              <tr><td>Development Fee</td><td>₹5,000</td><td><span class="badge badge-green">Paid</span></td></tr>
+              <tr><td>Examination Fee</td><td>₹2,500</td><td><span class="badge badge-green">Paid</span></td></tr>
+              <tr class="fee-total-row"><td><strong>Total</strong></td><td><strong>₹2,12,500</strong></td><td><span class="badge badge-green">Cleared</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="info-card">
+          <h3><i class="fas fa-history"></i> Payment History</h3>
+          <ul class="payment-history">
+            <li><div><strong>Semester 6</strong><p>Jan 5, 2026 · UPI · Ref: VIT2026010005</p></div><span class="fee-amount green">₹2,12,500</span></li>
+            <li><div><strong>Semester 5</strong><p>Jul 8, 2025 · NEFT · Ref: VIT2025070008</p></div><span class="fee-amount green">₹2,07,500</span></li>
+            <li><div><strong>Semester 4</strong><p>Jan 3, 2025 · UPI · Ref: VIT2025010003</p></div><span class="fee-amount green">₹2,07,500</span></li>
+          </ul>
+          <div class="fee-next">
+            <h4>Upcoming: Semester 7</h4>
+            <p>Due Date: <strong>July 30, 2026</strong></p>
+            <p>Estimated Amount: <strong>₹2,15,000</strong></p>
+            <button class="btn-primary" onclick="showPayNow()"><i class="fas fa-credit-card"></i> Pay Now</button>
+          </div>
+        </div>
+      </div>
+    </section>
+ 
+    <!-- ───── LEAVE PAGE ───── -->
+    <section class="page" id="page-leave">
+      <div class="page-header">
+        <h2>Leave Application</h2>
+        <p>Apply for and track your leave requests</p>
+      </div>
+      <div class="leave-grid">
+        <div class="info-card">
+          <h3><i class="fas fa-paper-plane"></i> New Leave Application</h3>
+          <form id="leave-form" onsubmit="submitLeave(event)">
+            <div class="form-group">
+              <label>Leave Type</label>
+              <select id="leave-type" class="form-select">
+                <option>Medical Leave</option>
+                <option>Personal Leave</option>
+                <option>Academic Leave</option>
+                <option>Emergency Leave</option>
+              </select>
+            </div>
+            <div class="form-row-2">
+              <div class="form-group">
+                <label>From Date</label>
+                <input type="date" id="leave-from" class="form-input"/>
+              </div>
+              <div class="form-group">
+                <label>To Date</label>
+                <input type="date" id="leave-to" class="form-input"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Reason</label>
+              <textarea id="leave-reason" rows="4" placeholder="Describe your reason in detail…" class="form-textarea"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Supporting Document (optional)</label>
+              <div class="file-input-styled">
+                <i class="fas fa-paperclip"></i>
+                <span>Attach medical certificate, etc.</span>
+                <input type="file" style="opacity:0;position:absolute;inset:0;cursor:pointer;"/>
+              </div>
+            </div>
+            <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Submit Application</button>
+          </form>
+        </div>
+        <div class="info-card">
+          <h3><i class="fas fa-list-ul"></i> Leave History</h3>
+          <ul class="leave-history-list">
+            <li class="leave-item"><div class="leave-dates"><strong>Feb 14–15, 2026</strong><span>Personal Leave · 2 Days</span></div><span class="leave-status rejected">Rejected</span></li>
+            <li class="leave-item"><div class="leave-dates"><strong>Jan 20–21, 2026</strong><span>Medical Leave · 2 Days</span></div><span class="leave-status approved">Approved</span></li>
+            <li class="leave-item"><div class="leave-dates"><strong>Dec 3, 2025</strong><span>Academic Leave · 1 Day</span></div><span class="leave-status approved">Approved</span></li>
+            <li class="leave-item"><div class="leave-dates"><strong>Nov 12, 2025</strong><span>Medical Leave · 3 Days</span></div><span class="leave-status pending">Pending</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+ 
+    <!-- ───── NOTIFICATIONS PAGE ───── -->
+    <section class="page" id="page-notifications">
+      <div class="page-header">
+        <h2>Notifications</h2>
+        <p>University announcements and alerts</p>
+      </div>
+      <div class="notif-filters">
+        <button class="notif-filter active" onclick="filterNotifs('all',this)">All</button>
+        <button class="notif-filter" onclick="filterNotifs('exam',this)">Exams</button>
+        <button class="notif-filter" onclick="filterNotifs('event',this)">Events</button>
+        <button class="notif-filter" onclick="filterNotifs('admin',this)">Administration</button>
+      </div>
+      <div class="notif-list" id="notif-list"></div>
+    </section>
+ 
+    <!-- ───── SETTINGS PAGE ───── -->
+    <section class="page" id="page-settings">
+      <div class="page-header">
+        <h2>Settings</h2>
+        <p>Customize your portal experience</p>
+      </div>
+      <div class="settings-grid">
+        <div class="info-card">
+          <h3><i class="fas fa-palette"></i> Appearance</h3>
+          <div class="setting-item">
+            <div><strong>Dark Mode</strong><p>Switch between light and dark themes</p></div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="dark-toggle-settings" onchange="toggleDark()"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="setting-item">
+            <div><strong>Compact Sidebar</strong><p>Show only icons in the sidebar</p></div>
+            <label class="toggle-switch">
+              <input type="checkbox" onchange="toggleCompactSidebar(this)"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+        <div class="info-card">
+          <h3><i class="fas fa-bell"></i> Notifications</h3>
+          <div class="setting-item"><div><strong>Email Notifications</strong><p>Receive updates via email</p></div><label class="toggle-switch"><input type="checkbox" checked/><span class="toggle-slider"></span></label></div>
+          <div class="setting-item"><div><strong>SMS Alerts</strong><p>Attendance & fee reminders</p></div><label class="toggle-switch"><input type="checkbox"/><span class="toggle-slider"></span></label></div>
+          <div class="setting-item"><div><strong>Push Notifications</strong><p>Exam & event reminders</p></div><label class="toggle-switch"><input type="checkbox" checked/><span class="toggle-slider"></span></label></div>
+        </div>
+        <div class="info-card">
+          <h3><i class="fas fa-shield-alt"></i> Security</h3>
+          <div class="form-group"><label>Current Password</label><input type="password" placeholder="••••••••" class="form-input"/></div>
+          <div class="form-group"><label>New Password</label><input type="password" placeholder="••••••••" class="form-input"/></div>
+          <div class="form-group"><label>Confirm Password</label><input type="password" placeholder="••••••••" class="form-input"/></div>
+          <button class="btn-primary" onclick="showToast('Password updated successfully!','success')"><i class="fas fa-save"></i> Update Password</button>
+        </div>
+        <div class="info-card">
+          <h3><i class="fas fa-sign-in-alt"></i> Active Sessions</h3>
+          <ul class="session-list">
+            <li><i class="fas fa-laptop"></i><div><strong>This device</strong><p>Chrome · Windows · Now</p></div><span class="badge badge-green">Current</span></li>
+            <li><i class="fas fa-mobile-alt"></i><div><strong>Android Phone</strong><p>VIT App · 2 hours ago</p></div><button class="btn-danger-sm" onclick="showToast('Session revoked','info')">Revoke</button></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+ 
+  </main>
+</div>
+ 
+<!-- TOAST NOTIFICATION -->
+<div class="toast-container" id="toast-container"></div>
+ 
+<!-- PAY NOW MODAL -->
+<div class="modal-overlay hidden" id="pay-modal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3><i class="fas fa-credit-card"></i> Fee Payment</h3>
+      <button onclick="closeModal('pay-modal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-amount">₹2,15,000 <span>Semester 7</span></p>
+      <div class="payment-options">
+        <button class="pay-opt active"><i class="fas fa-mobile-alt"></i> UPI</button>
+        <button class="pay-opt"><i class="fas fa-university"></i> Net Banking</button>
+        <button class="pay-opt"><i class="fas fa-credit-card"></i> Card</button>
+      </div>
+      <div class="form-group"><label>UPI ID</label><input type="text" placeholder="yourname@upi" class="form-input"/></div>
+      <button class="btn-primary btn-full" onclick="processPayment()"><i class="fas fa-lock"></i> Pay Securely</button>
+    </div>
+  </div>
+</div>
+ 
+<script type="module" src="script.js"></script>
+</body>
+</html>
