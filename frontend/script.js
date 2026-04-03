@@ -123,7 +123,7 @@ window.addEventListener("load", () => {
     loader.style.transform = "scale(1.04)";
     setTimeout(() => {
       loader.classList.add("hidden");
-      checkSession();
+      showAuth(); // ✅ FIXED
     }, 500);
   }, 2000);
 });
@@ -712,3 +712,17 @@ window.addEventListener("resize", () => {
     overlay.classList.add("hidden");
   }
 });
+window.onload = function () {
+  showAuth();
+};
+
+window.handleLogin = handleLogin;
+window.handleSignup = handleSignup;
+window.showForgot = showForgot;
+window.switchAuth = switchAuth;
+window.togglePass = togglePass;
+
+window.navigateTo = navigateTo;
+window.toggleSidebar = toggleSidebar;
+window.handleLogout = handleLogout;
+window.toggleDark = toggleDark;
