@@ -1,4 +1,6 @@
-
+window.onerror = function (msg) {
+  alert("Error: " + msg);
+};
 
 
 /* ═══════════════════════════════════════
@@ -117,14 +119,22 @@ let assignments = [...DUMMY_ASSIGNMENTS];
 /* ──────────────────── LOADER ──────────────────── */
 window.addEventListener("load", () => {
   createParticles();
+
   setTimeout(() => {
     const loader = document.getElementById("loader");
-    loader.style.opacity = "0";
-    loader.style.transform = "scale(1.04)";
-    setTimeout(() => {
-      loader.classList.add("hidden");
-      showAuth(); // ✅ FIXED
-    }, 500);
+
+    if (loader) {   // ✅ IMPORTANT CHECK
+      loader.style.opacity = "0";
+      loader.style.transform = "scale(1.04)";
+
+      setTimeout(() => {
+        loader.classList.add("hidden");
+        showAuth();   // ✅ ensure this runs
+      }, 500);
+    } else {
+      showAuth();   // ✅ fallback if loader not found
+    }
+
   }, 2000);
 });
  
@@ -217,8 +227,8 @@ async function handleLogin(e) {
       showToast(res.message, "error");
     }
 
-  } catch (err) {
-    showToast("Server error", "error");
+  }catch(err) {
+    console.log(err);
   }
 }
  
@@ -712,9 +722,7 @@ window.addEventListener("resize", () => {
     overlay.classList.add("hidden");
   }
 });
-window.onload = function () {
-  showAuth();
-};
+
 
 window.handleLogin = handleLogin;
 window.handleSignup = handleSignup;
