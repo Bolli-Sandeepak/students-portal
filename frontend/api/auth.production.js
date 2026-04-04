@@ -1,6 +1,4 @@
-
-
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = "https://your-render-backend-url.onrender.com/api";
 
 // Auth APIs
 export async function signupUser(data) {
