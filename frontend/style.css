@@ -910,39 +910,653 @@ body.sidebar-collapsed .main-content { margin-left: 68px; }
 /* ══════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════ */
+
+/* Tablets & Medium Screens */
 @media (max-width: 1100px) {
   .charts-row, .bottom-grid { grid-template-columns: 1fr; }
   .profile-layout { grid-template-columns: 1fr; }
   .profile-card-main { position: static; }
   .hostel-grid, .fees-grid, .leave-grid { grid-template-columns: 1fr; }
   .settings-grid { grid-template-columns: 1fr; }
+  .info-grid { grid-template-columns: repeat(2, 1fr); }
 }
- 
+
+/* Tablets */
 @media (max-width: 768px) {
   :root { --sidebar-w: 260px; }
+  
+  /* Sidebar - Mobile Menu */
   .sidebar {
+    position: fixed; left: 0; top: var(--topnav-h);
+    height: calc(100vh - var(--topnav-h));
     transform: translateX(-100%);
     box-shadow: var(--shadow-lg);
+    z-index: 95;
   }
-  .sidebar.mobile-open { transform: translateX(0); }
-  .sidebar-overlay { display: block !important; }
-  .main-content { margin-left: 0; padding: 1rem; }
-  .topnav-center { display: none; }
-  .nav-profile-info { display: none; }
-  .topnav { padding: 0 1rem; }
-  .topnav-left { min-width: auto; }
-  .overview-grid { grid-template-columns: 1fr 1fr; }
-  .form-row-2 { grid-template-columns: 1fr; }
-  .page-header { flex-direction: column; align-items: flex-start; }
-  .auth-card { padding: 1.75rem; }
-  .sem-tabs { overflow-x: auto; flex-wrap: nowrap; padding-bottom: .5rem; }
-  .attendance-summary-bar { grid-template-columns: 1fr 1fr; }
+  
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  
+  .sidebar-overlay {
+    display: block !important;
+  }
+  
+  .sidebar-overlay.hidden {
+    display: none !important;
+  }
+  
+  /* Main Content */
+  .main-content {
+    margin-left: 0;
+    padding: 1.25rem;
+    min-height: calc(100vh - var(--topnav-h));
+  }
+  
+  /* Topnav */
+  .topnav {
+    padding: 0 0.75rem;
+  }
+  
+  .topnav-left {
+    min-width: auto;
+  }
+  
+  .topnav-center {
+    display: none;
+  }
+  
+  .nav-profile-info {
+    display: none;
+  }
+  
+  .topnav-brand {
+    font-size: 1rem;
+  }
+  
+  .topnav-brand i {
+    font-size: 1.1rem;
+  }
+  
+  /* Page Layout */
+  .overview-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .ov-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .ov-sparkline {
+    width: 100%;
+    height: 45px;
+  }
+  
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .page-header h2 {
+    font-size: 1.35rem;
+  }
+  
+  .page-header-meta {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  /* Forms */
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  /* Auth Card */
+  .auth-card {
+    padding: 1.5rem;
+  }
+  
+  .auth-card-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .auth-card-header h1 {
+    font-size: 1.4rem;
+  }
+  
+  /* Tabs */
+  .sem-tabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .sem-tab {
+    flex-shrink: 0;
+  }
+  
+  /* Attendance */
+  .attendance-summary-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  /* Academic Summary */
+  .academic-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  /* Data Table */
+  .data-table {
+    font-size: 0.75rem;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  /* Info Card */
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Notifications */
+  .notif-item {
+    flex-direction: column;
+  }
+  
+  .notif-meta {
+    width: 100%;
+    flex-direction: row-reverse;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  /* Toast */
+  .toast-container {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+  }
+  
+  .toast {
+    min-width: unset;
+    width: 100%;
+  }
+  
+  /* Modal */
+  .modal-card {
+    max-width: 90%;
+  }
+  
+  /* Buttons */
+  .btn-primary {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Leave Grid */
+  .leave-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .payment-history li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  /* Hostel */
+  .hostel-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hostel-sidebar-cards {
+    width: 100%;
+  }
+  
+  /* Price table */
+  .fees-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Settings */
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .setting-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem 0;
+  }
+  
+  /* Bottom Grid */
+  .bottom-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Profile */
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .profile-card-main {
+    position: static;
+  }
+  
+  .profile-stats-mini {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
- 
-@media (max-width: 480px) {
-  .overview-grid { grid-template-columns: 1fr; }
-  .academic-summary { grid-template-columns: 1fr 1fr; }
-  .attendance-summary-bar { grid-template-columns: 1fr; }
-  .profile-stats-mini { grid-template-columns: repeat(3, 1fr); }
+
+/* Mobile Devices */
+@media (max-width: 600px) {
+  :root {
+    --topnav-h: 56px;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  
+  /* Typography */
+  .page-header h2 {
+    font-size: 1.25rem;
+  }
+  
+  .info-card h3 {
+    font-size: 0.9rem;
+  }
+  
+  /* Main Content */
+  .main-content {
+    padding: 1rem;
+  }
+  
+  /* Overview Grid */
+  .overview-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .ov-card {
+    padding: 1rem;
+  }
+  
+  .ov-value {
+    font-size: 1.4rem;
+  }
+  
+  .ov-label {
+    font-size: 0.7rem;
+  }
+  
+  /* Topnav */
+  .topnav {
+    height: var(--topnav-h);
+  }
+  
+  .icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .nav-avatar {
+    width: 32px;
+    height: 32px;
+  }
+  
+  /* Sidebar */
+  .sidebar {
+    width: 100%;
+  }
+  
+  .sidebar.collapsed {
+    width: 200px;
+    position: fixed;
+  }
+  
+  .sidebar-profile {
+    padding: 0.5rem 1rem 1rem;
+  }
+  
+  .sidebar-avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  /* Forms */
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group input,
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 0.6rem 0.8rem;
+  }
+  
+  .form-group label {
+    font-size: 0.8rem;
+    margin-bottom: 0.35rem;
+  }
+  
+  /* Button */
+  .btn-primary {
+    padding: 0.65rem 1.2rem;
+    font-size: 0.85rem;
+  }
+  
+  /* Assignment */
+  .assignment-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .assignment-info {
+    width: 100%;
+  }
+  
+  .assignment-actions {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  /* File Upload Zone */
+  .assignment-upload-zone {
+    padding: 2rem 1rem;
+  }
+  
+  .upload-icon {
+    font-size: 2.5rem;
+  }
+  
+  /* Activity List */
+  .activity-list li {
+    padding: 0.5rem 0;
+    font-size: 0.8rem;
+  }
+  
+  .activity-list strong {
+    font-size: 0.8rem;
+  }
+  
+  /* Event List */
+  .event-item {
+    padding: 0.6rem;
+    gap: 0.75rem;
+  }
+  
+  .ev-date strong {
+    font-size: 1rem;
+  }
+  
+  .ev-date small {
+    font-size: 0.65rem;
+  }
+  
+  /* Table Horizontal Scroll */
+  .data-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .data-table thead,
+  .data-table tbody,
+  .data-table tr {
+    display: block;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  /* Attendance Summary */
+  .attendance-summary-bar {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .att-summary-item {
+    padding: 0.9rem;
+  }
+  
+  .att-summary-value {
+    font-size: 1.2rem;
+  }
+  
+  /* Marks Tabs */
+  .sem-tabs {
+    gap: 0.3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .sem-tab {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.75rem;
+  }
+  
+  /* Modal */
+  .modal-overlay {
+    padding: 1rem 0.5rem;
+  }
+  
+  .modal-card {
+    max-width: 95%;
+  }
+  
+  .modal-header {
+    padding: 1rem;
+  }
+  
+  .modal-header h3 {
+    font-size: 0.95rem;
+  }
+  
+  .modal-body {
+    padding: 1rem;
+  }
+  
+  .modal-amount {
+    font-size: 1.4rem;
+  }
+  
+  /* Notifications */
+  .notif-item {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+  
+  .notif-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .notif-content strong {
+    font-size: 0.85rem;
+  }
+  
+  .notif-content p {
+    font-size: 0.78rem;
+  }
+  
+  /* Leave Form */
+  .file-input-styled {
+    padding: 0.6rem 0.8rem;
+  }
+  
+  /* Status badges */
+  .badge {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  /* Payment History */
+  .payment-history li {
+    padding: 0.6rem 0;
+    flex-direction: column;
+  }
+  
+  .fee-amount {
+    font-size: 0.85rem;
+  }
+  
+  /* Warden Card */
+  .warden-card {
+    gap: 0.65rem;
+  }
+  
+  .warden-img {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .warden-card strong {
+    font-size: 0.85rem;
+  }
+  
+  .warden-card p {
+    font-size: 0.75rem;
+  }
+  
+  /* Amenities */
+  .amenities-list {
+    gap: 0.35rem;
+  }
+  
+  .amenity-chip {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.7rem;
+  }
+  
+  /* Profile */
+  .profile-pic {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .profile-card-main h2 {
+    font-size: 1.1rem;
+  }
+  
+  .profile-reg-badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+  }
+  
+  /* Token Container */
+  .toast-container {
+    bottom: 0.75rem;
+    right: 0.75rem;
+    left: 0.75rem;
+  }
+  
+  .toast {
+    font-size: 0.8rem;
+    padding: 0.7rem 1rem;
+    min-width: unset;
+  }
 }
+
+/* Small Mobile Devices */
+@media (max-width: 400px) {
+  .page-header h2 {
+    font-size: 1.1rem;
+  }
+  
+  .overview-grid {
+    gap: 0.75rem;
+  }
+  
+  .ov-card {
+    padding: 0.8rem;
+  }
+  
+  .ov-value {
+    font-size: 1.2rem;
+  }
+  
+  .btn-primary {
+    padding: 0.55rem 1rem;
+    font-size: 0.8rem;
+  }
+  
+  .academic-summary {
+    grid-template-columns: 1fr;
+  }
+  
+  .summary-card {
+    padding: 1rem;
+  }
+  
+  .summary-card strong {
+    font-size: 1rem;
+  }
+  
+  .profile-stats-mini {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+}
+
+/* Very Large Screens */
+@media (min-width: 1400px) {
+  .main-content {
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .overview-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .charts-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .info-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .topnav,
+  .sidebar,
+  .sidebar-overlay,
+  .toast-container {
+    display: none !important;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    margin-top: 0;
+    padding: 0;
+  }
+  
+  .page {
+    display: block !important;
+    page-break-inside: avoid;
+  }
+  
+  .btn-primary,
+  .btn-outline,
+  .icon-btn {
+    display: none;
+  }
  
