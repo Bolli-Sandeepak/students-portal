@@ -4,7 +4,7 @@
 ═══════════════════════════════════════ */
 
 "use strict";
-import { loginUser, signupUser, getUserProfile, getUserDashboardData, getUserAttendance, getUserMarks, getUserNotifications, getUserAssignments } from "./api/auth.js";
+import { loginUser, signupUser, getUserProfile, getUserDashboardData, getUserAttendance, getUserMarks, getUserNotifications, getUserAssignments, markNotificationAsRead } from "./api/auth.js";
 
 /* ──────────────────── DATA ──────────────────── */
 
@@ -106,9 +106,13 @@ function initializeAppUI() {
   // Initialize dashboard
   initializeDashboard();
   
+  if (dashboardData && dashboardData.assignments) {
+    assignments = dashboardData.assignments;
+  }
+  
   // Render static content
   renderAttendanceTable();
-  switchSem(1);
+  switchSem(loggedInUser.semester || 1);
   renderAssignments();
   renderNotifications();
   initDashboardCharts();
@@ -499,7 +503,7 @@ function initDashboardCharts() {
   // Attendance Chart
   const attCtx = document.getElementById("attendanceChart");
   if (attCtx && !attChartInstance) {
-    const attendanceData = dashboardData?.attendance || dashboardData?.attendance || [];
+    const attendanceData = dashboardData?.attendance || [];
     const pcts = attendanceData.length > 0 
       ? attendanceData.map(s => Math.round((s.attended/s.conducted)*100))
       : [87, 85, 88, 91, 86, 84];
@@ -575,11 +579,12 @@ function renderAttendanceTable() {
     const badgeCls = pct >= 85 ? "badge-green" : pct >= 75 ? "badge-gold" : "badge-red";
     const statusText = pct >= 75 ? "Good" : "Low";
     
-    const codeName = s.code ? s.code.split(" ")[0] : "—";
+    const rawCode = s.courseCode || s.code;
+    const codeName = rawCode ? rawCode.split(" ")[0] : "—";
     
     return `<tr>
       <td><strong>${codeName}</strong></td>
-      <td>${s.name || s.courseName || "—"}</td>
+      <td>${s.courseName || s.name || "—"}</td>
       <td>${s.faculty || "—"}</td>
       <td>${s.conducted || 0}</td>
       <td>${s.attended || 0}</td>
@@ -622,13 +627,44 @@ function switchSem(sem) {
 }
 
 function renderMarksTable(sem) {
-  const data = MARKS_DATA[sem];
+  let data = null;
+  // If we have API data for marks, search through it
+  if (dashboardData && dashboardData.marks) {
+    const semMarks = dashboardData.marks.filter(m => m.semester === sem);
+    if (semMarks.length > 0) {
+      data = {
+        sgpa: semMarks[0].sgpa || null,
+        credits: semMarks.reduce((acc, m) => acc + (m.credits || 0), 0),
+        subjects: semMarks.map(m => ({
+          code: m.courseCode || m.code,
+          name: m.courseName || m.name,
+          credits: m.credits,
+          internal: m.internal,
+          external: m.external,
+          total: m.total,
+          grade: m.grade,
+          gp: m.gp
+        }))
+      };
+      
+      const totalCredits = data.subjects.reduce((a, s) => a + (s.credits || 0), 0);
+      const totalPoints = data.subjects.reduce((a, s) => a + ((s.gp || 0) * (s.credits || 0)), 0);
+      if (totalCredits > 0 && data.subjects.every(s => s.gp)) {
+        data.sgpa = (totalPoints / totalCredits).toFixed(2);
+      }
+    }
+  }
+  
+  if (!data) {
+    data = MARKS_DATA[sem];
+  }
+
   const headerEl = document.getElementById("marks-sem-header");
   const tbody = document.getElementById("marks-table-body");
   const footer = document.getElementById("marks-footer");
   if (!tbody) return;
   
-  if (!data || data.subjects.length === 0) {
+  if (!data || !data.subjects || data.subjects.length === 0) {
     headerEl.innerHTML = `<h3>Semester ${sem}</h3><p>No data available for this semester yet.</p>`;
     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem;">Data not available</td></tr>`;
     footer.innerHTML = "";
@@ -676,10 +712,10 @@ function renderAssignments() {
   
   list.innerHTML = assignments.map((a, i) => `
     <li class="assignment-item">
-      <div class="file-icon"><i class="fas ${iconMap[a.type] || 'fa-file'}"></i></div>
+      <div class="file-icon"><i class="fas ${iconMap[a.fileType || a.type] || 'fa-file'}"></i></div>
       <div class="assignment-info">
-        <strong>${a.name}</strong>
-        <small>${a.subject} · ${a.size} · Uploaded ${a.date}</small>
+        <strong>${a.fileName || a.name}</strong>
+        <small>${a.subject} · ${a.size} · Uploaded ${a.submittedDate ? new Date(a.submittedDate).toLocaleDateString() : a.date}</small>
       </div>
       <span class="badge badge-green" style="flex-shrink:0">${a.status}</span>
       <div class="assignment-actions">
@@ -734,19 +770,21 @@ function renderNotifications(filter) {
   const dataToRender = dashboardData?.notifications || NOTIFICATIONS_DATA;
   const filtered = filter === "all" ? dataToRender : dataToRender.filter(n => n.type === filter);
   
-  list.innerHTML = filtered.map(n => `
-    <div class="notif-item ${n.unread ? "unread" : ""}" onclick="markRead(${n.id})">
-      <div class="notif-icon ${n.color}"><i class="fas ${n.icon}"></i></div>
+  list.innerHTML = filtered.map(n => {
+    const rawId = n._id ? `'${n._id}'` : n.id;
+    return `
+    <div class="notif-item ${n.unread ? "unread" : ""}" onclick="markRead(${rawId})">
+      <div class="notif-icon ${n.color || 'notif-blue'}"><i class="fas ${n.icon || 'fa-bell'}"></i></div>
       <div class="notif-content">
         <strong>${n.title}</strong>
-        <p>${n.body || n.message}</p>
+        <p>${n.message || n.body}</p>
       </div>
       <div class="notif-meta">
-        <span class="notif-time">${n.time}</span>
+        <span class="notif-time">${n.createdAt ? new Date(n.createdAt).toLocaleDateString() : n.time}</span>
         ${n.unread ? '<span class="notif-dot"></span>' : ''}
       </div>
     </div>
-  `).join("") || `<div style="text-align:center;padding:3rem;color:var(--text-muted)"><i class="fas fa-bell-slash" style="font-size:2rem;margin-bottom:.75rem;display:block"></i>No notifications here.</div>`;
+  `}).join("") || `<div style="text-align:center;padding:3rem;color:var(--text-muted)"><i class="fas fa-bell-slash" style="font-size:2rem;margin-bottom:.75rem;display:block"></i>No notifications here.</div>`;
 }
 
 function filterNotifs(type, btn) {
@@ -756,13 +794,14 @@ function filterNotifs(type, btn) {
   renderNotifications(type);
 }
 
-function markRead(id) {
-  const n = dashboardData?.notifications?.find(n => n.id === id);
+async function markRead(id) {
+  const n = dashboardData?.notifications?.find(n => n._id === id || n.id === id);
   if (!n) {
     const n2 = NOTIFICATIONS_DATA.find(n => n.id === id);
     if (n2) n2.unread = false;
   } else {
     n.unread = false;
+    if (n._id) await markNotificationAsRead(n._id);
   }
   renderNotifications();
   
