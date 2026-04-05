@@ -77,18 +77,38 @@ async function loadDashboardData() {
       return;
     }
     
-    const res = await getUserDashboardData(loggedInUser._id);
-    if (res.success) {
-      dashboardData = res;
-      loggedInUser = res.user; // Update user data
-      localStorage.setItem("user", JSON.stringify(res.user)); // Save updated user data
-      initializeAppUI();
-    } else {
-      console.warn("Failed to load dashboard data, using local data");
-      initializeAppUI();
+    // Fetch all user data in parallel
+    const [profileRes, attendanceRes, marksRes, notificationsRes, assignmentsRes] = await Promise.all([
+      getUserProfile(loggedInUser._id),
+      getUserAttendance(loggedInUser._id),
+      getUserMarks(loggedInUser._id),
+      getUserNotifications(loggedInUser._id),
+      getUserAssignments(loggedInUser._id)
+    ]);
+    
+    // Build dashboard data from API responses
+    dashboardData = {
+      success: true,
+      user: profileRes.success ? profileRes.user : loggedInUser,
+      attendance: attendanceRes.success ? attendanceRes.data : [],
+      marks: marksRes.success ? marksRes.data : {},
+      notifications: notificationsRes.success ? notificationsRes.data : [],
+      assignments: assignmentsRes.success ? assignmentsRes.data : []
+    };
+    
+    // Update logged-in user with latest profile
+    if (profileRes.success) {
+      loggedInUser = profileRes.user;
+      localStorage.setItem("user", JSON.stringify(profileRes.user));
     }
+    
+    console.log("Dashboard data loaded:", dashboardData);
+    initializeAppUI();
   } catch (error) {
     console.error("Error loading dashboard data:", error);
+    console.warn("Falling back to static data");
+    // Initialize with empty dashboard data - will use static fallbacks
+    dashboardData = { success: false, user: loggedInUser, attendance: [], marks: {}, notifications: [], assignments: [] };
     initializeAppUI();
   }
 }
@@ -567,22 +587,26 @@ function renderAttendanceTable() {
   const tbody = document.getElementById("attendance-table-body");
   if (!tbody) return;
   
-  const attendanceToRender = dashboardData?.attendance || ATTENDANCE_DATA;
+  const attendanceToRender = (dashboardData?.attendance && dashboardData.attendance.length > 0) ? dashboardData.attendance : ATTENDANCE_DATA;
   
   tbody.innerHTML = attendanceToRender.map(s => {
-    const pct = Math.round((s.attended / s.conducted) * 100);
+    const conducted = s.conducted || 0;
+    const attended = s.attended || 0;
+    const pct = conducted > 0 ? Math.round((attended / conducted) * 100) : 0;
     const cls = pct >= 85 ? "prog-green" : pct >= 75 ? "prog-amber" : "prog-red";
     const badgeCls = pct >= 85 ? "badge-green" : pct >= 75 ? "badge-gold" : "badge-red";
     const statusText = pct >= 75 ? "Good" : "Low";
     
-    const codeName = s.code ? s.code.split(" ")[0] : "—";
+    const courseCode = s.code || s.courseCode || "—";
+    const courseName = s.name || s.courseName || "—";
+    const faculty = s.faculty || "—";
     
     return `<tr>
-      <td><strong>${codeName}</strong></td>
-      <td>${s.name || s.courseName || "—"}</td>
-      <td>${s.faculty || "—"}</td>
-      <td>${s.conducted || 0}</td>
-      <td>${s.attended || 0}</td>
+      <td><strong>${courseCode}</strong></td>
+      <td>${courseName}</td>
+      <td>${faculty}</td>
+      <td>${conducted}</td>
+      <td>${attended}</td>
       <td>
         <div class="progress-wrap">
           <div class="progress-bar-bg"><div class="progress-bar-fill ${cls}" style="width:${pct}%"></div></div>
@@ -622,42 +646,61 @@ function switchSem(sem) {
 }
 
 function renderMarksTable(sem) {
-  const data = MARKS_DATA[sem];
+  // Use real marks data from API if available, otherwise use static
+  let data = null;
+  
+  if (dashboardData?.marks && typeof dashboardData.marks === 'object') {
+    // API returns marks as object with semester keys
+    data = dashboardData.marks[sem];
+    if (!data) {
+      // Try to find semester in array format
+      if (Array.isArray(dashboardData.marks)) {
+        data = dashboardData.marks.find(m => m.semester === sem);
+      }
+    }
+  }
+  
+  // Fallback to static data
+  if (!data) {
+    data = MARKS_DATA[sem];
+  }
+  
   const headerEl = document.getElementById("marks-sem-header");
   const tbody = document.getElementById("marks-table-body");
   const footer = document.getElementById("marks-footer");
   if (!tbody) return;
   
-  if (!data || data.subjects.length === 0) {
+  if (!data || !data.subjects || data.subjects.length === 0) {
     headerEl.innerHTML = `<h3>Semester ${sem}</h3><p>No data available for this semester yet.</p>`;
     tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:2rem;">Data not available</td></tr>`;
     footer.innerHTML = "";
     return;
   }
   
-  headerEl.innerHTML = `<h3>Semester ${sem}</h3><p>Credits Registered: ${data.credits} · SGPA: ${data.sgpa ?? "Ongoing"}</p>`;
+  headerEl.innerHTML = `<h3>Semester ${sem}</h3><p>Credits Registered: ${data.credits || "—"} · SGPA: ${data.sgpa ?? "Ongoing"}</p>`;
   
   tbody.innerHTML = data.subjects.map(s => {
-    const gradeClass = s.grade === "S" ? "grade-S" : s.grade === "A" ? "grade-A" : s.grade === "B" ? "grade-B" : s.grade === "C" ? "grade-C" : "grade-na";
+    const grade = s.grade || "—";
+    const gradeClass = grade === "S" ? "grade-S" : grade === "A" ? "grade-A" : grade === "B" ? "grade-B" : grade === "C" ? "grade-C" : "grade-na";
     return `<tr>
-      <td><strong>${s.code}</strong></td>
-      <td>${s.name}</td>
-      <td>${s.credits}</td>
+      <td><strong>${s.code || "—"}</strong></td>
+      <td>${s.name || "—"}</td>
+      <td>${s.credits || "—"}</td>
       <td>${s.internal ?? "—"}</td>
       <td>${s.external ?? "—"}</td>
       <td>${s.total ?? "—"}</td>
-      <td><strong class="${gradeClass}">${s.grade}</strong></td>
+      <td><strong class="${gradeClass}">${grade}</strong></td>
       <td>${s.gp ?? "—"}</td>
     </tr>`;
   }).join("");
   
   if (data.sgpa) {
-    const totalCreds = data.subjects.reduce((a,s) => a + s.credits, 0);
-    const gradePoints = data.subjects.reduce((a,s) => a + (s.gp ? s.gp * s.credits : 0), 0);
+    const totalCreds = data.subjects.reduce((a,s) => a + (s.credits || 0), 0);
+    const gradePoints = data.subjects.reduce((a,s) => a + ((s.gp || 0) * (s.credits || 0)), 0);
     footer.innerHTML = `
-      <div>SGPA: <strong>${data.sgpa}</strong></div>
+      <div>SGPA: <strong>${data.sgpa.toFixed(2)}</strong></div>
       <div>Total Credits: <strong>${totalCreds}</strong></div>
-      <div>Grade Points: <strong>${gradePoints}</strong></div>
+      <div>Grade Points: <strong>${gradePoints.toFixed(2)}</strong></div>
       <span>Result: <strong style="color:var(--green)">PASSED</strong></span>
     `;
   } else {
@@ -672,24 +715,31 @@ function renderAssignments() {
   const count = document.getElementById("sub-count");
   if (!list) return;
   
-  const iconMap = { pdf: "fa-file-pdf", doc: "fa-file-word", zip: "fa-file-archive" };
+  // Use real assignments from API if available, otherwise use local
+  const assignmentsToRender = (dashboardData?.assignments && dashboardData.assignments.length > 0) ? dashboardData.assignments : assignments;
   
-  list.innerHTML = assignments.map((a, i) => `
+  const iconMap = { pdf: "fa-file-pdf", doc: "fa-file-word", docx: "fa-file-word", zip: "fa-file-archive" };
+  
+  list.innerHTML = assignmentsToRender.map((a, i) => {
+    const fileType = a.type || (a.name ? a.name.split(".").pop().toLowerCase() : "file");
+    const statusColor = a.status === "Submitted" ? "badge-green" : a.status === "Pending" ? "badge-amber" : "badge-gray";
+    return `
     <li class="assignment-item">
-      <div class="file-icon"><i class="fas ${iconMap[a.type] || 'fa-file'}"></i></div>
+      <div class="file-icon"><i class="fas ${iconMap[fileType] || 'fa-file'}"></i></div>
       <div class="assignment-info">
-        <strong>${a.name}</strong>
-        <small>${a.subject} · ${a.size} · Uploaded ${a.date}</small>
+        <strong>${a.name || "Unnamed Assignment"}</strong>
+        <small>${a.subject || a.courseCode || "—"} · ${a.size || "—"} · ${a.date || new Date().toLocaleDateString()}</small>
       </div>
-      <span class="badge badge-green" style="flex-shrink:0">${a.status}</span>
+      <span class="badge ${statusColor}" style="flex-shrink:0">${a.status || "Submitted"}</span>
       <div class="assignment-actions">
         <button class="action-icon" title="Download"><i class="fas fa-download"></i></button>
         <button class="action-icon" title="Delete" onclick="deleteAssignment(${i})" style="color:var(--red)"><i class="fas fa-trash"></i></button>
       </div>
     </li>
-  `).join("");
+  `;
+  }).join("");
   
-  if (count) count.textContent = `${assignments.length} Submitted`;
+  if (count) count.textContent = `${assignmentsToRender.length} Submitted`;
 }
 
 function handleFileUpload(e) {
@@ -731,22 +781,29 @@ function renderNotifications(filter) {
   const list = document.getElementById("notif-list");
   if (!list) return;
   
-  const dataToRender = dashboardData?.notifications || NOTIFICATIONS_DATA;
+  // Use real notifications from API if available, otherwise use static
+  const dataToRender = (dashboardData?.notifications && dashboardData.notifications.length > 0) ? dashboardData.notifications : NOTIFICATIONS_DATA;
   const filtered = filter === "all" ? dataToRender : dataToRender.filter(n => n.type === filter);
   
-  list.innerHTML = filtered.map(n => `
-    <div class="notif-item ${n.unread ? "unread" : ""}" onclick="markRead(${n.id})">
-      <div class="notif-icon ${n.color}"><i class="fas ${n.icon}"></i></div>
+  list.innerHTML = filtered.map(n => {
+    const notifIcon = n.icon || "fa-bell";
+    const notifColor = n.color || "notif-blue";
+    const isUnread = n.unread !== false;  // Default to unread if not specified
+    const notifTime = n.time || n.createdAt || "Just now";
+    return `
+    <div class="notif-item ${isUnread ? "unread" : ""}" onclick="markRead(${n.id})">
+      <div class="notif-icon ${notifColor}"><i class="fas ${notifIcon}"></i></div>
       <div class="notif-content">
         <strong>${n.title}</strong>
-        <p>${n.body || n.message}</p>
+        <p>${n.body || n.message || n.description || ""}</p>
       </div>
       <div class="notif-meta">
-        <span class="notif-time">${n.time}</span>
-        ${n.unread ? '<span class="notif-dot"></span>' : ''}
+        <span class="notif-time">${notifTime}</span>
+        ${isUnread ? '<span class="notif-dot"></span>' : ''}
       </div>
     </div>
-  `).join("") || `<div style="text-align:center;padding:3rem;color:var(--text-muted)"><i class="fas fa-bell-slash" style="font-size:2rem;margin-bottom:.75rem;display:block"></i>No notifications here.</div>`;
+  `;
+  }).join("") || `<div style="text-align:center;padding:3rem;color:var(--text-muted)"><i class="fas fa-bell-slash" style="font-size:2rem;margin-bottom:.75rem;display:block"></i>No notifications here.</div>`;
 }
 
 function filterNotifs(type, btn) {
